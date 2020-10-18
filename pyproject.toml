@@ -28,11 +28,6 @@ pytest = "^6.1.1"
 pytest-cov = "^2.10.1"
 pre-commit = "^2.7.1"
 
-[tool.poetry.scripts]
-dev = 'uvicorn app.main:app --reload'
-test = 'pytest'
-run = 'uvicorn app.main:app'
-
 [build-system]
 requires = [
     "poetry-core>=1.0.0",
