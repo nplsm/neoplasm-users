@@ -1,0 +1,11 @@
+.git
+.venv
+.vscode
+test
+.coverage
+.coveragerc
+.env
+.flake8
+.gitignore
+.pre-commit-config.yml
+mypy.ini

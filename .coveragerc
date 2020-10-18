@@ -1,0 +1,6 @@
+[run]
+omit = .venv/*, tests/*, *__init__.py
+branch = True
+
+[report]
+show_missing = True
