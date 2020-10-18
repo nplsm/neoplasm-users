@@ -30,4 +30,4 @@ jobs:
           poetry add -D pytest
       - name: Test with pytest
         run: |
-          poetry run test
+          poetry run pytest -m
