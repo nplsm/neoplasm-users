@@ -74,7 +74,7 @@ async def get_tokens_and_add_refresh_to_db(
 
 
 async def renew_tokens(
-    token: str,
+    refresh_token: str,
     secret: str = settings.refresh_token_secret,
     issuer: str = settings.token_iss,
     algorithm: str = settings.token_algorithm,
@@ -83,7 +83,7 @@ async def renew_tokens(
 ) -> Optional[Tokens]:
     try:
         payload = jwt.decode(
-            token,
+            refresh_token,
             secret,
             algorithms=[algorithm],
             issuer=issuer,
@@ -94,9 +94,13 @@ async def renew_tokens(
             if (
                 user
                 and user.hashed_refresh_token
-                and context.verify(token, user.hashed_refresh_token)
+                and context.verify(refresh_token, user.hashed_refresh_token)
             ):
-                return await get_tokens_and_add_refresh_to_db(user_id)
+                while True:
+                    tokens = await get_tokens_and_add_refresh_to_db(user_id)
+                    if refresh_token != tokens.refresh_token:
+                        break
+                return tokens
         return None
     except JWTError:
         return None
