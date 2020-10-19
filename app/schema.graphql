@@ -1,0 +1,36 @@
+type User @key(fields: "id") {
+  id: ID!
+  email: String!
+}
+
+type Tokens {
+  accessToken: String!
+  refreshToken: String!
+}
+
+type UserPayload {
+  error: String
+  user: User
+  tokens: Tokens
+}
+
+input UserRegister {
+  email: String!
+  password1: String!
+  password2: String!
+}
+
+input UserLogin {
+  email: String!
+  password: String!
+}
+
+type Query {
+  me: User
+}
+
+type Mutation {
+  register(userInput: UserRegister!): UserPayload!
+  login(userInput: UserLogin!): UserPayload!
+  renewTokens(refreshToken: String!): Tokens
+}

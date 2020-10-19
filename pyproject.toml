@@ -1,10 +1,14 @@
 [tool.poetry]
-name = "users"
+name = "neoplasm-users"
 version = "0.1.0"
 description = "Neoplasm Users service"
 license = "MIT"
 authors = ["Pavel <pavel@neoplasm.xyz>"]
+readme = "README.md"
 repository = "https://github.com/nplsm/neoplasm-users"
+packages = [
+    { include = "app" },
+]
 
 [tool.poetry.dependencies]
 python = "^3.9"
@@ -27,6 +31,7 @@ mypy = "^0.790"
 pytest = "^6.1.1"
 pytest-cov = "^2.10.1"
 pre-commit = "^2.7.1"
+requests = "^2.24.0"
 
 [build-system]
 requires = [
@@ -47,4 +52,3 @@ force_grid_wrap = 0
 use_parentheses = true
 ensure_newline_before_comments = true
 line_length = 88
-known_third_party = []
