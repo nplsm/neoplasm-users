@@ -10,7 +10,7 @@ from pymongo.errors import DuplicateKeyError
 from .crud import create_user, get_user_by_email, get_user_by_id
 from .hashing import get_hash, verify_password
 from .models import Tokens, User, UserLogin, UserPayload, UserRegister, UserSave
-from .tokens import get_tokens_and_add_refresh_to_db, renew_tokens
+from .tokens import get_tokens_and_add_refresh_token_to_db, renew_tokens
 
 query = QueryType()
 mutation = MutationType()
@@ -55,7 +55,7 @@ async def resolve_register(
             **user_data.dict(),
         )
         user = await create_user(user_to_create)
-        tokens = await get_tokens_and_add_refresh_to_db(user.id)
+        tokens = await get_tokens_and_add_refresh_token_to_db(user.id)
         payload = UserPayload.construct(user=user, tokens=tokens)
     except DuplicateKeyError:
         error = "Email already registered"
@@ -79,7 +79,7 @@ async def resolve_login(
         if user:
             password_is_correct = await verify_password(user_data.password, user)
             if password_is_correct:
-                tokens = await get_tokens_and_add_refresh_to_db(user.id)
+                tokens = await get_tokens_and_add_refresh_token_to_db(user.id)
                 payload = UserPayload.construct(user=user, tokens=tokens)
             else:
                 error = "Wrong password"

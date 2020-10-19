@@ -60,16 +60,23 @@ def get_tokens(user_id: ObjectId) -> Tokens:
     )
 
 
-async def get_tokens_and_add_refresh_to_db(
+async def add_refresh_token_to_db(
+    refresh_token: str,
     user_id: ObjectId,
-    collection: AsyncIOMotorCollection = collection,
-) -> Tokens:
-    tokens = get_tokens(user_id)
-    hashed_refresh_token = get_hash(tokens.refresh_token)
+) -> None:
+    hashed_refresh_token = get_hash(refresh_token)
     await collection.find_one_and_update(
         {"_id": user_id},
         {"$set": {"hashed_refresh_token": hashed_refresh_token}},
     )
+
+
+async def get_tokens_and_add_refresh_token_to_db(
+    user_id: ObjectId,
+    collection: AsyncIOMotorCollection = collection,
+) -> Tokens:
+    tokens = get_tokens(user_id)
+    await add_refresh_token_to_db(tokens.refresh_token, user_id)
     return tokens
 
 
@@ -97,9 +104,10 @@ async def renew_tokens(
                 and context.verify(refresh_token, user.hashed_refresh_token)
             ):
                 while True:
-                    tokens = await get_tokens_and_add_refresh_to_db(user_id)
+                    tokens = get_tokens(user_id)
                     if refresh_token != tokens.refresh_token:
                         break
+                await add_refresh_token_to_db(tokens.refresh_token, user_id)
                 return tokens
         return None
     except JWTError:
