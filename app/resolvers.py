@@ -73,8 +73,8 @@ async def resolve_login(
     info: GraphQLResolveInfo,
     user_input: dict,
 ) -> UserPayload:
-    user_data = UserLogin(**user_input)
     try:
+        user_data = UserLogin(**user_input)
         user = await get_user_by_email(user_data.email)
         if user:
             password_is_correct = await verify_password(user_data.password, user)

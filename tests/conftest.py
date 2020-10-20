@@ -74,21 +74,8 @@ def post(client) -> Callable[[str, dict], Response]:
 @pytest.fixture()
 def registration(post: Callable[[str, dict], Response]) -> Callable[[dict], Response]:
     def _registration(variables: dict) -> Response:
-        query = """
-            mutation($userInput: UserRegister!) {
-                register(userInput: $userInput) {
-                    error
-                    user {
-                        id
-                        email
-                    }
-                    tokens {
-                        accessToken
-                        refreshToken
-                    }
-                }
-            }
-        """
+        with open("tests/mutations/registration.gql") as f:
+            query = f.read()
         return post(query, variables)
 
     return _registration
@@ -107,14 +94,18 @@ def register(registration: Callable[[dict], Response]) -> Callable[[dict], dict]
 @pytest.fixture()
 def tokens_renewal(post: Callable[[str, dict], Response]) -> Callable[[dict], Response]:
     def _tokens_renewal(variables: dict) -> Response:
-        query = """
-            mutation($refreshToken: String!) {
-                renewTokens(refreshToken: $refreshToken) {
-                    accessToken
-                    refreshToken
-                }
-            }
-        """
+        with open("tests/mutations/token_renewal.gql") as f:
+            query = f.read()
         return post(query, variables)
 
     return _tokens_renewal
+
+
+@pytest.fixture()
+def login(post: Callable[[str, dict], Response]) -> Callable[[dict], Response]:
+    def _login(variables: dict) -> Response:
+        with open("tests/mutations/login.gql") as f:
+            query = f.read()
+        return post(query, variables)
+
+    return _login

@@ -14,10 +14,10 @@ class Settings(BaseSettings):
     mongo_db_name: str = "neoplasm-users"
     mongo_collection_name: str = "users"
     token_iss: str = "nplsm"
-    token_algorithm: str = "HS256"
-    access_token_secret: str = str(token_hex(512))
+    token_algorithm: str = "HS512"
+    access_token_secret: str = str(token_hex(1024))
     access_token_expiration: int = 5
-    refresh_token_secret: str = str(token_hex(512))
+    refresh_token_secret: str = str(token_hex(1024))
     refresh_token_expiration: int = 7 * 24 * 60
 
     @property
