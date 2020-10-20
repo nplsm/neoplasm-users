@@ -3,7 +3,7 @@ from app.settings import settings
 from app.tokens import get_refresh_token
 
 
-def test_renew_tokens(register, tokens_renewal, test_token, collection):
+def test_renew_tokens(register, tokens_renewal, collection, test_token):
     register_data = register(
         {
             "userInput": {
@@ -13,9 +13,11 @@ def test_renew_tokens(register, tokens_renewal, test_token, collection):
             }
         }
     )
-    user_id = register_data["user"]["id"]
-    register_refresh_token = register_data["tokens"]["refreshToken"]
-    register_access_token = register_data["tokens"]["accessToken"]
+    register_user = register_data["user"]
+    register_tokens = register_data["tokens"]
+    user_id = register_user["id"]
+    register_refresh_token = register_tokens["refreshToken"]
+    register_access_token = register_tokens["accessToken"]
 
     response = tokens_renewal({"refreshToken": register_refresh_token})
     assert response.ok

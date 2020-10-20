@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from typing import Optional
+from uuid import uuid4
 
 from bson.objectid import ObjectId
 from jose import JWTError, jwt
@@ -27,12 +28,14 @@ def get_token(
         "sub": str(user_id),
         "exp": expiration,
         "iat": issued_at,
+        "jti": uuid4().hex,
     }
-    return jwt.encode(
+    token = jwt.encode(
         payload,
         secret,
         algorithm=algorithm,
     )
+    return token
 
 
 def get_access_token(
@@ -40,7 +43,8 @@ def get_access_token(
     secret: str = settings.access_token_secret,
     expirtion_timedelta: timedelta = settings.access_token_expiration_timedelta,
 ) -> str:
-    return get_token(user_id, secret, expirtion_timedelta)
+    token = get_token(user_id, secret, expirtion_timedelta)
+    return token
 
 
 def get_refresh_token(
@@ -48,27 +52,18 @@ def get_refresh_token(
     secret: str = settings.refresh_token_secret,
     expirtion_timedelta: timedelta = settings.refresh_token_expiration_timedelta,
 ) -> str:
-    return get_token(user_id, secret, expirtion_timedelta)
+    token = get_token(user_id, secret, expirtion_timedelta)
+    return token
 
 
 def get_tokens(user_id: ObjectId) -> Tokens:
     access_token = get_access_token(user_id)
     refresh_token = get_refresh_token(user_id)
-    return Tokens(
+    tokens = Tokens(
         access_token=access_token,
         refresh_token=refresh_token,
     )
-
-
-async def add_refresh_token_to_db(
-    refresh_token: str,
-    user_id: ObjectId,
-) -> None:
-    hashed_refresh_token = get_hash(refresh_token)
-    await collection.find_one_and_update(
-        {"_id": user_id},
-        {"$set": {"hashed_refresh_token": hashed_refresh_token}},
-    )
+    return tokens
 
 
 async def get_tokens_and_add_refresh_token_to_db(
@@ -76,7 +71,11 @@ async def get_tokens_and_add_refresh_token_to_db(
     collection: AsyncIOMotorCollection = collection,
 ) -> Tokens:
     tokens = get_tokens(user_id)
-    await add_refresh_token_to_db(tokens.refresh_token, user_id)
+    hashed_refresh_token = get_hash(tokens.refresh_token)
+    await collection.find_one_and_update(
+        {"_id": user_id},
+        {"$set": {"hashed_refresh_token": hashed_refresh_token}},
+    )
     return tokens
 
 
@@ -103,11 +102,7 @@ async def renew_tokens(
                 and user.hashed_refresh_token
                 and context.verify(refresh_token, user.hashed_refresh_token)
             ):
-                while True:
-                    tokens = get_tokens(user_id)
-                    if refresh_token != tokens.refresh_token:
-                        break
-                await add_refresh_token_to_db(tokens.refresh_token, user_id)
+                tokens = await get_tokens_and_add_refresh_token_to_db(user_id)
                 return tokens
         return None
     except JWTError:
